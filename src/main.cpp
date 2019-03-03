@@ -41,6 +41,8 @@
 #include "validationinterface.h"
 #include "versionbits.h"
 #include "definition.h"
+#include "primitives/block.h"
+#include "crypto/scrypt.h"
 
 #include <atomic>
 #include <sstream>
@@ -97,6 +99,8 @@ FeeFilterRounder filterRounder(::minRelayTxFee);
 // Settings
 int64_t nTransactionFee = 0;
 int64_t nMinimumInputValue = DUST_HARD_LIMIT;
+
+//uint256 hashGenesisBlock = uint256S("0xbffee15386bc99333bd844742d4d5d51048172aff7f5700cef3f3190c00e5c9e");
 
 struct IteratorComparator {
     template<typename I>
@@ -5146,6 +5150,47 @@ bool InitBlockIndex(const CChainParams &chainparams) {
 
     // Only add the genesis block if not reindexing (in which case we reuse the one already on disk)
     if (!fReindex) {
+    /*
+		//Searching genesis block nNonce
+		CBlock &block = const_cast<CBlock &>(chainparams.GenesisBlock());
+		
+		//hashGenesisBlock = uint256S("0x000000000000024b89b42a942fe0d9fea3bb44ab7bd1b19115dd6a759c0808b8");
+		printf("%s\n",block.GetHash().ToString().c_str());
+		printf("%s\n",hashGenesisBlock.ToString().c_str());
+		printf("%s\n",block.hashMerkleRoot.ToString().c_str());
+		
+		//assert(block.hashMerkleRoot==uint256S("0x365d2aa75d061370c9aefdabac3985716b1e3b4bb7c4af4ed54f25e5aaa42783"));
+		if(true && block.GetHash()!=hashGenesisBlock)
+		{
+			printf("Searching for genesis block...\n");
+			arith_uint256 hashTarget = arith_uint256().SetCompact(block.nBits);
+			uint256 thash;
+			while(true) 
+			{
+  				scrypt_N_1_1_256(BEGIN(block.nVersion),BEGIN(thash),GetNfactor(block.nTime));
+  				//thash = block.GetPoWHash(1);
+  				if(UintToArith256(thash)<=hashTarget) break;
+  				if((block.nNonce & 0xFFF) == 0)
+  				{
+  					printf("nonce %08X:hash=%s:target=%s\n",block.nNonce,thash.ToString().c_str(),hashTarget.ToString().c_str());
+  				}
+  				++block.nNonce;
+  				if (block.nNonce == 0)
+                  {
+                      printf("NONCE WRAPPED, incrementing time\n");
+                      ++block.nTime;
+                  }
+  			}
+  			printf("block.nTime = %u \n", block.nTime);
+        printf("block.nNonce = %u \n", block.nNonce);
+        printf("computed powHash = %s \n", thash.ToString().c_str());
+        printf("block.GetHash = %s\n", block.GetHash().ToString().c_str());
+        printf("block.hashMerkleRoot = %s\n", block.hashMerkleRoot.ToString().c_str());
+  			
+		}
+		    //printf();
+        assert(block.GetHash() == hashGenesisBlock);
+		*/
         try {
             CBlock &block = const_cast<CBlock &>(chainparams.GenesisBlock());
             // Start new block file
